@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
+
+from tasks.serializers import UserSerializer
 from .serializers import UserRegistrationSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 
@@ -67,16 +69,11 @@ class LogoutView(APIView):
 
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
+    
 
-    def post(self, request):
-        user= get_object_or_404(User, pk=request.id)
-        
-        return Response({
-            'username': user.username,
-            'first_name':user.first_name,
-            'last_name': user.last_name,
-            
-        })
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
 
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
