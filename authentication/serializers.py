@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
+from django.contrib.auth import get_user_model
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
@@ -19,3 +20,28 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         )
         Token.objects.create(user=user)
         return user
+    
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password', 'placeholder': 'Password'})
+
+    class Meta:
+        model = User
+        fields = ('username','password')
+        read_only_fields = ('username', )
+
+    def validate(self, data):
+        user = authenticate_with_username_and_password(data["username"], data["password"])
+        if user:
+            if user.is_active:
+                return {'username': user.username, 'password': user.password}
+        raise serializers.ValidationError("Incorrect Credentials")
+    
+def authenticate_with_username_and_password(username, password):
+    user = get_user_model()
+    try:
+        user = user.objects.get(username=username)
+        if user.check_password(password):
+            return user
+    except user.DoesNotExist:
+        return None    
