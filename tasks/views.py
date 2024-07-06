@@ -43,5 +43,4 @@ class UpdateTaskView(generics.UpdateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskCategorySerializer  # Ändere die Verwendung hier
     lookup_field = 'id'
-    # authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Authentifizierung aktivieren
