@@ -5,12 +5,19 @@ from django.contrib.auth import get_user_model
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+    confirm_password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'password']
+        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'confirm_password']
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Die Passwörter stimmen nicht überein.")
+        return data
 
     def create(self, validated_data):
+        validated_data.pop('confirm_password')
         user = User.objects.create_user(
             username=validated_data['username'],
             first_name=validated_data['first_name'],
@@ -20,7 +27,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         )
         Token.objects.create(user=user)
         return user
-    
+
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password', 'placeholder': 'Password'})
@@ -44,4 +51,4 @@ def authenticate_with_username_and_password(username, password):
         if user.check_password(password):
             return user
     except user.DoesNotExist:
-        return None    
+        return None

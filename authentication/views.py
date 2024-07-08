@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -12,17 +11,15 @@ from tasks.serializers import UserSerializer
 from .serializers import UserRegistrationSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 
-
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
-    permission_classes = [AllowAny]  # Keine Authentifizierung erforderlich
+    permission_classes = [AllowAny]
 
 class CustomObtainAuthToken(ObtainAuthToken):
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
-    
-class LoginView(ObtainAuthToken):
 
+class LoginView(ObtainAuthToken):
     serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
@@ -36,9 +33,9 @@ class LoginView(ObtainAuthToken):
                     token, created = Token.objects.get_or_create(user=user)
                     return Response({'token': token.key, 'user_id': user.pk, 'username': user.username})
                 except user.DoesNotExist:
-                    return Response('User not found', status=status.HTTP_404_NOT_FOUND)
+                    return Response('Benutzer nicht gefunden', status=status.HTTP_404_NOT_FOUND)
             else:
-                return Response('username field is required', status=status.HTTP_400_BAD_REQUEST)
+                return Response('Das Feld "Benutzername" ist erforderlich', status=status.HTTP_400_BAD_REQUEST)
 
         else:
             userData = serializer.data
@@ -46,15 +43,13 @@ class LoginView(ObtainAuthToken):
                 try:
                     user = get_user_model().objects.get(username=userData['username'])
                     if not user.is_active:
-                        return Response('username not activated!',status=status.HTTP_403_FORBIDDEN)
+                        return Response('Benutzername nicht aktiviert!',status=status.HTTP_403_FORBIDDEN)
                     else:
-                        return Response('Wrong username or password',status=status.HTTP_401_UNAUTHORIZED)
+                        return Response('Falscher Benutzername oder Passwort',status=status.HTTP_401_UNAUTHORIZED)
                 except get_user_model().DoesNotExist:
-                    return Response('User not found', status=status.HTTP_404_NOT_FOUND)
+                    return Response('Benutzer nicht gefunden', status=status.HTTP_404_NOT_FOUND)
             else:
-                return Response('username field is required', status=status.HTTP_400_BAD_REQUEST)
-
-    
+                return Response('Das Feld "Benutzername" ist erforderlich', status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -69,7 +64,6 @@ class LogoutView(APIView):
 
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
-    
 
     def get(self, request):
         serializer = UserSerializer(request.user)

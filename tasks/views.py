@@ -1,6 +1,5 @@
 from rest_framework.permissions import IsAuthenticated
-# from rest_framework_simplejwt.authentication import JWTAuthentication
-from .serializers import TaskCategorySerializer  # Ändere den Import hier
+from .serializers import TaskCategorySerializer
 from rest_framework import generics
 from .models import Task
 from rest_framework.views import APIView
@@ -11,17 +10,11 @@ class CreateTaskView(generics.CreateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskCategorySerializer
     print('hallo')
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
-    
-    # serializer_class = TaskCategorySerializer 
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
 class TaskListView(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         tasks = Task.objects.all()
@@ -41,6 +34,6 @@ class DeleteTaskView(generics.GenericAPIView):
 
 class UpdateTaskView(generics.UpdateAPIView):
     queryset = Task.objects.all()
-    serializer_class = TaskCategorySerializer  # Ändere die Verwendung hier
+    serializer_class = TaskCategorySerializer  
     lookup_field = 'id'
-    permission_classes = [IsAuthenticated]  # Authentifizierung aktivieren
+    permission_classes = [IsAuthenticated]  
