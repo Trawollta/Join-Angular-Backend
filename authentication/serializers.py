@@ -2,30 +2,23 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
+from .models import Profile
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
-    confirm_password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+    color = serializers.CharField(write_only=True) 
 
     class Meta:
-        model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'confirm_password']
-
-    def validate(self, data):
-        if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Die Passwörter stimmen nicht überein.")
-        return data
+        model = get_user_model()
+        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'color']
 
     def create(self, validated_data):
-        validated_data.pop('confirm_password')
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            email=validated_data['email'],
-            password=validated_data['password']
-        )
-        Token.objects.create(user=user)
+        color = validated_data.pop('color')
+        password = validated_data.pop('password')
+        user = get_user_model().objects.create_user(**validated_data, password=password)
+        profile, created = Profile.objects.get_or_create(user=user)
+        profile.color = color
+        profile.save()
         return user
 
 class LoginSerializer(serializers.Serializer):
@@ -52,3 +45,12 @@ def authenticate_with_username_and_password(username, password):
             return user
     except user.DoesNotExist:
         return None
+    
+    
+class UserSerializer(serializers.Serializer):
+    class Meta:
+        model = User
+        fields='__all__'
+        
+        
+    
