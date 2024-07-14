@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, status, viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
@@ -67,19 +67,34 @@ class LogoutView(APIView):
 
 class CurrentUserView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
+    queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
 
-    def get_queryset(self):
-        # This now correctly returns a queryset of the User model filtered to the current user
-        return get_user_model().objects.filter(id=self.request.user.id)
+    def partial_update(self, request, *args, **kwargs):
+        user = self.get_object()
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)  # This correctly
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     # serializer_class = UserRegistrationSerializer
     permission_classes = [IsAuthenticated]
+    
+    
+
+class UpdateUserView(generics.UpdateAPIView):
+    queryset = get_user_model().objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+

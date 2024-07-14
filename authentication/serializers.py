@@ -47,10 +47,23 @@ def authenticate_with_username_and_password(username, password):
         return None
     
     
-class UserSerializer(serializers.Serializer):
+class UserSerializer(serializers.ModelSerializer):
+    color = serializers.CharField(source='profile.color', required=False)
+
     class Meta:
         model = User
-        fields='__all__'
-        
-        
-    
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'color']
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', {})
+        color = profile_data.get('color')
+
+        instance = super().update(instance, validated_data)
+
+        # Update profile instance
+        profile = instance.profile
+        if color:
+            profile.color = color
+        profile.save()
+
+        return instance

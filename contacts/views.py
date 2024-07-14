@@ -7,7 +7,6 @@ class ContactList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = ContactListSerializer
 
-# wofür diesen Endpunkt?
 class ContactDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Contact.objects.all()
     serializer_class = ContactListSerializer
