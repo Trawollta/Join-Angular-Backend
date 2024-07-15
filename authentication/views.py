@@ -85,7 +85,6 @@ class CurrentUserView(viewsets.ModelViewSet):
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    # serializer_class = UserRegistrationSerializer
     permission_classes = [IsAuthenticated]
     
     
