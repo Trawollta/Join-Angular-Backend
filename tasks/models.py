@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.conf import settings
 
 PRIORITY_CHOICES = (
@@ -14,7 +13,7 @@ STATUS_CHOICES = (
     ("IN_PROGRESS", "IN_PROGRESS"),
     ("DONE", "DONE")
 )
-    
+
 class Task(models.Model):
     title = models.CharField(max_length=150)
     description = models.CharField(max_length=600)
@@ -38,8 +37,9 @@ class Task(models.Model):
         related_name="assigned_tasks",
         blank=True
     )
-    
-    color = models.CharField(max_length=7, default="#FFFFFF")
+    category = models.CharField(max_length=50, default='Allgemein')  
+    due_date = models.DateField(null=True, blank=True)
+    subtasks = models.JSONField(default=list, blank=True)  # Verwenden Sie JSONField für subtasks
 
     def __str__(self):
         return self.title

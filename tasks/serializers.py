@@ -3,16 +3,17 @@ from .models import Task
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
-    color = serializers.CharField(source='profile.color', read_only=True)
+    color = serializers.CharField(source='profile.color', required=False)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'color'] 
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'color']
 
 class TaskCategorySerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)
     assigned_to = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
-    color = serializers.CharField(source='profile.color', read_only=True)
+    subtasks = serializers.ListField(child=serializers.CharField(), allow_empty=True)
+    due_date = serializers.DateField()
 
     class Meta:
         model = Task
