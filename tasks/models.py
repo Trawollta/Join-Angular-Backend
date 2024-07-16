@@ -39,7 +39,7 @@ class Task(models.Model):
     )
     category = models.CharField(max_length=50, default='Allgemein')  
     due_date = models.DateField(null=True, blank=True)
-    subtasks = models.JSONField(default=list, blank=True)  # Verwenden Sie JSONField für subtasks
+    subtasks = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return self.title
